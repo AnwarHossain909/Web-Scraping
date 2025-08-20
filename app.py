@@ -1,3 +1,4 @@
+'''
 import requests
 import json
 
@@ -30,8 +31,8 @@ def get_app_data(app_id, country="us"):
                 "ipad_screenshots": app_info.get("ipadScreenshotUrls", []),
                 #"appletv_screenshots": app_info.get("appletvScreenshotUrls", []),
                 #"genres": app_info.get("genres", []),
-                "average_user_rating": app_info.get("averageUserRating"),
-                "user_rating_count": app_info.get("userRatingCount")
+                #"average_user_rating": app_info.get("averageUserRating"),
+                #"user_rating_count": app_info.get("userRatingCount")
             }
             return result
         else:
@@ -53,9 +54,10 @@ if __name__ == "__main__":
         #"310633997",  # WhatsApp Messenger
         #"544007664",  # YouTube
         #"333903271",  # Twitter (X)
-        "6446124409", # GenAI AI Chatbot
+        #"6446124409", # GenAI AI Chatbot
         #"6473001180"    #booked ai(afzal)
-        "1668787639"
+        #"1668787639"
+        "2036628890900837154"
 
     ]
 
@@ -72,3 +74,83 @@ if __name__ == "__main__":
         json.dump(all_apps_data, f, indent=4, ensure_ascii=False)
 
     print("All app data saved to all_apps_data.json")
+
+    '''
+
+
+
+#playstore theke data collect korar code
+import json
+from google_play_scraper import app
+
+# ---------- Function to fetch app data ----------
+def get_playstore_app_data(package_name, lang="en", country="us"):
+    try:
+        result = app(
+            package_name,
+            lang=lang,
+            country=country
+        )
+
+        # Select useful fields
+        app_data = {
+            "app_id": package_name,
+            "title": result.get("title"),
+            "description": result.get("description"),
+            #"summary": result.get("summary"),
+            "app_url": f"https://play.google.com/store/apps/details?id={package_name}",
+            #"developer": result.get("developer"),
+            #"developer_email": result.get("developerEmail"),
+            #"developer_website": result.get("developerWebsite"),
+            #"icon": result.get("icon"),
+            "header_image": result.get("headerImage"),
+            "screenshots": result.get("screenshots", []),
+            "genre": result.get("genre"),
+            #"installs": result.get("installs"),
+            #"min_installs": result.get("minInstalls"),
+            #"released": result.get("released"),
+            #"updated": result.get("updated"),
+            #"rating": result.get("score"),
+            #"ratings_count": result.get("ratings"),
+            #"reviews_count": result.get("reviews"),
+            #"size": result.get("size"),
+            #"current_version": result.get("version"),
+            #"content_rating": result.get("contentRating"),
+            #"ad_supported": result.get("adSupported"),
+            #"in_app_purchases": result.get("offersIAP"),
+            #"free": result.get("free"),
+            #"price": result.get("price")
+        }
+        return app_data
+    except Exception as e:
+        print(f"Failed to fetch data for {package_name}: {e}")
+        return {}
+
+# ---------- Main ----------
+if __name__ == "__main__":
+    # List of Play Store Package Names
+    package_names = [
+        #"com.facebook.katana",   # Facebook
+        #"com.instagram.android", # Instagram
+        #"com.zhiliaoapp.musically", # TikTok
+        #"com.spotify.music",     # Spotify
+        #"com.whatsapp",          # WhatsApp
+        #"com.google.android.youtube", # YouTube
+        #"com.twitter.android"    # Twitter (X)
+        #"com.openai.chatgpt&hl",
+        "com/store/games?hl=en"
+    ]
+
+    all_apps_data = []
+
+    for package in package_names:
+        print(f"Fetching data for {package}")
+        app_data = get_playstore_app_data(package)
+        if app_data:
+            all_apps_data.append(app_data)
+
+    # ✅ Save all apps data to JSON
+    with open("playstore_apps_data.json", "w", encoding="utf-8") as f:
+        json.dump(all_apps_data, f, indent=4, ensure_ascii=False)
+
+    print("✅ All Play Store app data saved to playstore_apps_data.json")
