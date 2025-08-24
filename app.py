@@ -57,7 +57,7 @@ if __name__ == "__main__":
         #"6446124409", # GenAI AI Chatbot
         #"6473001180"    #booked ai(afzal)
         #"1668787639"
-        "2036628890900837154"
+        "293301871"
 
     ]
 
@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
     print("All app data saved to all_apps_data.json")
 
-    '''
+    
 
 
 
@@ -138,7 +138,8 @@ if __name__ == "__main__":
         #"com.google.android.youtube", # YouTube
         #"com.twitter.android"    # Twitter (X)
         #"com.openai.chatgpt&hl",
-        "com/store/games?hl=en"
+        #"com/store/games?hl=en"
+        "com.bd/products/24-i293301871-s1300643140.html?"
     ]
 
     all_apps_data = []
@@ -154,3 +155,137 @@ if __name__ == "__main__":
         json.dump(all_apps_data, f, indent=4, ensure_ascii=False)
 
     print("✅ All Play Store app data saved to playstore_apps_data.json")
+
+'''
+
+
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+"""
+একটি URL থেকে:
+- পেজ টাইটেল
+- ভিজিবল টেক্সট (স্ক্রিপ্ট/স্টাইল বাদ)
+- সব লিংক (a[href])
+- সব ইমেজ (img[src])
+
+ডেডুপ করে, অ্যাবসোলিউট URL বানিয়ে (base URL দিয়ে), JSON আউটপুট দেয়।
+ব্যবহার:
+    python scrape_to_json.py https://example.com -o output.json
+"""
+
+'''
+
+import requests
+from bs4 import BeautifulSoup
+import json
+from datetime import datetime
+from urllib.parse import urljoin
+
+def scrape_website(url):
+    try:
+        response = requests.get(url, timeout=10)
+        response.raise_for_status()
+    except requests.RequestException as e:
+        print(f" Error fetching {url}: {e}")
+        return None
+
+    soup = BeautifulSoup(response.text, 'html.parser')
+
+    # websites theke text
+    text = soup.get_text(separator="\n", strip=True)
+
+    # link
+    links = [urljoin(url, a['href']) for a in soup.find_all('a', href=True)]
+
+    # image
+    images = [urljoin(url, img['src']) for img in soup.find_all('img', src=True)]
+
+    # json bosab
+    data = {
+        "url": url,
+        "fetched_at": datetime.utcnow().isoformat() + "Z",
+        "title": soup.title.string.strip() if soup.title else "No Title",
+        "scraped_text": text,
+        "scraped_links": links,
+        "scraped_images": images
+    }
+
+    return data
+
+
+if __name__ == "__main__":
+    
+    url = "https://app.creatify.ai/tool/link-to-video/edit-product?flowId=4aff5041-bba5-4ca5-870d-6de51261560f"
+    result = scrape_website(url)
+    if result:
+        with open("output.json", "w", encoding="utf-8") as f:
+            json.dump(result, f, ensure_ascii=False, indent=4)
+        print("Data saved to output.json")
+    else:
+        print("Failed to scrape website")
+
+'''
+
+
+
+from selenium import webdriver
+from selenium.webdriver.chrome.service import Service
+from selenium.webdriver.common.by import By
+from webdriver_manager.chrome import ChromeDriverManager
+import time
+import json
+
+def scrape_dynamic_site(url):
+    # Setup Chrome (auto download driver)
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")   # Browser দেখাবে না (background এ run করবে)
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    driver.get(url)
+
+    # Wait for JS to load (change time if needed)
+    time.sleep(5)
+
+    data = {
+        "url": url,
+        "title": None,
+        "description": None,
+        "images": []
+    }
+
+    # Try to grab Title (example: first <h1>)
+    try:
+        data["title"] = driver.find_element(By.TAG_NAME, "h1").text
+    except:
+        pass
+
+    # Try to grab Description (example: first <p>)
+    try:
+        data["description"] = driver.find_element(By.TAG_NAME, "p").text
+    except:
+        pass
+
+    # Grab all <img> tags (screenshots, product images etc.)
+    images = driver.find_elements(By.TAG_NAME, "img")
+    for img in images:
+        src = img.get_attribute("src")
+        if src and src.startswith("http"):
+            data["images"].append(src)
+
+    driver.quit()
+    return data
+
+
+# ---------------- MAIN ----------------
+target_url = input("Enter Website URL: ").strip()
+scraped_data = scrape_dynamic_site(target_url)
+
+# Save to JSON
+with open("scraped_data.json", "w", encoding="utf-8") as f:
+    json.dump(scraped_data, f, ensure_ascii=False, indent=4)
+
+print(" Data successfully scraped and saved to scraped_data.json")
+
